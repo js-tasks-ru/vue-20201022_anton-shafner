@@ -1,26 +1,19 @@
 export const CounterButton = {
   // Шаблон потребуется отредактировать
-  template: `<button type="button" @click="handleClick">{{localCount}}</button>`,
+  template: `<button type="button" @click="handleClick">{{count}}</button>`,
   props: {
-    count: Number,
-    required: true,
-    default: 0,
+    count: {
+      type: Number,
+      default: 0,
+    }
   },
   model: {
     prop: 'count',
     event: 'increment',
   },
-  computed: {
-    localCount() {
-      if (!!this.count) {
-        return this.count;
-      }
-      return 0;
-    }
-  },
   methods: {
     handleClick() {
-      this.$emit('increment', this.localCount + 1)
+      this.$emit('increment', this.count + 1)
     }
   }
 
