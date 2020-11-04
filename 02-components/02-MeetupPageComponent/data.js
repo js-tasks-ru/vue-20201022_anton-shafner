@@ -22,6 +22,22 @@ export async function fetchMeetup(id) {
   return fetch(`${API_URL}/meetups/${id}`).then((res) => res.json());
 }
 
+export function toStringDate(date) {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, '0');
+  const day = date.getDate().toString().padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+export function toLocalDate(date) {
+  return date.toLocaleString(navigator.language, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  })
+}
+
 /**
  * Словарь заголовков по умолчанию для всех типов элементов программы
  */
