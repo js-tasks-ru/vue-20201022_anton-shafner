@@ -50,7 +50,6 @@ export default {
   data() {
     return {
       isOpen: false,
-      selectedOption: null,
     }
   },
 
@@ -76,17 +75,11 @@ export default {
     },
     hasIcon() {
       return this.options.find(option => option.icon);
+    },
+    selectedOption() {
+      return this.options.find(option => option.value === this.value);
     }
   },
-
-  watch: {
-    value: {
-      handler: function() {
-        this.selectedOption = this.options.find(option => option.value === this.value);
-      },
-      immediate: true,
-    },
-  } 
 };
 </script>
 
