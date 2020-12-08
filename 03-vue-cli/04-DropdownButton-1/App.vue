@@ -86,7 +86,13 @@ export default {
       ],
       selectedLang: 'EN',
       selectedType: undefined,
+      subsriptions: [],
     };
+  },
+  methods: {
+    changeSubscriptions(subsriptions) {
+      this.subsriptions = subsriptions;
+    }
   },
 };
 </script>
