@@ -8,7 +8,7 @@
     <component
       :is="inputComponent"
       class="form-control"
-      :class="{ 'form-control_sm': this.small, 'form-control_rounded': rounded }"
+      :class="{ 'form-control_sm': small, 'form-control_rounded': rounded }"
       :value.prop="value"
       v-bind="$attrs"
       v-on="extendedListeners"
