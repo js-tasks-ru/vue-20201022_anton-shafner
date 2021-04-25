@@ -1,18 +1,78 @@
 <template>
   <div
-    class="input-group input-group_icon input-group_icon-left input-group_icon-right"
+    class="input-group"
+    :class="iconClasses"
   >
-    <img class="icon" />
+    <slot name="left-icon"></slot>
 
-    <input class="form-control form-control_rounded form-control_sm" />
-
-    <img class="icon" />
+    <component
+      :is="inputComponent"
+      class="form-control"
+      :class="{ 'form-control_sm': small, 'form-control_rounded': rounded }"
+      :value.prop="value"
+      v-bind="$attrs"
+      v-on="extendedListeners"
+    />
+    <slot name="right-icon"></slot>
   </div>
 </template>
 
 <script>
 export default {
+  inheritAttrs: false,
   name: 'AppInput',
+  model: {
+    prop: 'value',
+    event: 'input'
+  },
+  props: {
+    value: {
+      type: String,
+      default: '',
+    },
+    small: {
+      type: Boolean,
+      default: false,
+    },
+    rounded: {
+      type: Boolean,
+      default: false,
+    },
+    multiline: {
+      type: Boolean,
+      default: false,
+    }
+  },
+  methods: {
+    handleInput(event) {
+      this.$emit('input', event.target.value);
+    },
+    handleChange(event) {
+      this.$emit('change', event.target.value);
+    },
+  },
+  computed: {
+    inputComponent() {
+      return this.multiline ? 'textarea': 'input'
+    },
+    extendedListeners() {
+      return {
+        ...this.$listeners,
+        input: this.handleInput,
+        change: this.handleChange,
+      }
+
+    },
+    iconClasses() {
+      const rightIconSlot = this.$slots['right-icon'];
+      const leftIconSlot = this.$slots['left-icon'];
+      return {
+        'input-group_icon': leftIconSlot || rightIconSlot,
+        'input-group_icon-right': rightIconSlot,
+        'input-group_icon-left': leftIconSlot,
+      }
+    }
+  }
 };
 </script>
 
