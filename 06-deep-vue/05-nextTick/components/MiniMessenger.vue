@@ -1,6 +1,6 @@
 <template>
   <main>
-    <messages-list class="messages" :messages="messages" />
+    <messages-list class="messages" :messages="messages" ref="messages"/>
     <form @submit.prevent="send" style="display: flex;">
       <input type="text" placeholder="New message" v-model="newMessage" />
       <button>Send</button>
@@ -27,17 +27,31 @@ export default {
         { id: id++, text: 'Third message' },
         { id: id++, text: 'Forth message' },
       ],
+      messagesEl: null,
     };
+  },
+
+  mounted() {
+    this.messagesEl = this.$refs.messages.$el;
   },
 
   methods: {
     send() {
+      if (!this.newMessage) {
+        return;
+      }
       this.messages.push({
         id: id++,
         text: this.newMessage,
       });
       this.newMessage = '';
+      this.updateScroll();
     },
+    updateScroll() {
+      this.$nextTick(() => {
+        this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
+      });
+    }
   },
 };
 </script>
