@@ -1,6 +1,39 @@
 <script>
+function cloneVNode (vnode) {
+  const VNode = vnode.__proto__.constructor;
+  const cloned = new VNode(
+    vnode.tag,
+    {...vnode.data, class: {...vnode.data.class, 'fade-list-item': true}},
+    vnode.children && vnode.children.slice(),
+    vnode.text,
+    vnode.elm,
+    vnode.context,
+    vnode.componentOptions,
+    vnode.asyncFactory
+  )
+  cloned.ns = vnode.ns
+  cloned.isStatic = vnode.isStatic
+  cloned.key = vnode.key
+  cloned.isComment = vnode.isComment
+  cloned.fnContext = vnode.fnContext
+  cloned.fnOptions = vnode.fnOptions
+  cloned.fnScopeId = vnode.fnScopeId
+  cloned.asyncMeta = vnode.asyncMeta
+  cloned.isCloned = true
+  return cloned
+}
 export default {
   name: 'FadeTransitionGroup',
+  render: function(createElement) {
+    const clonedNodes = this.$slots.default.map(node => cloneVNode(node));
+    return createElement('transition-group', {
+      class: 'fade-list',
+      props: {
+        name: 'fade-list'
+      },
+      attrs: this.$attrs
+    }, clonedNodes);
+  }
 };
 </script>
 
