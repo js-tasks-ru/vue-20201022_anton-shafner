@@ -1,6 +1,11 @@
 <template>
   <label class="checkbox">
-    <input type="checkbox" />
+    <input
+      type="checkbox"
+      :checked="customChecked"
+      v-on="listeners"
+      v-bind="attrs"
+    />
     <slot />
     <span></span>
   </label>
@@ -9,6 +14,56 @@
 <script>
 export default {
   name: 'AppCheckbox',
+  inheritAttrs: false,
+  props: { 
+    checked: [Boolean, Array], 
+    value: String
+  },
+  model: {
+    prop: 'checked',
+    event: 'change'
+  },
+  methods: {
+    changeHandler(event) {
+      this.customChecked = event.target.checked;
+    }
+  },
+  computed: {
+    customChecked: {
+      get: function() {
+        if (this.value && Array.isArray(this.checked)) {
+          return this.checked.includes(this.value);
+        }
+        return this.checked;
+      },
+      set(val) {
+        const isChecked = val;
+        let parameter = isChecked;
+        if (this.value && Array.isArray(this.checked)) {
+          const valuesArray = this.checked.slice();
+          if (isChecked) {
+            valuesArray.push(this.value);
+            parameter = valuesArray;
+          } else {
+            parameter = valuesArray.filter(value => value !== this.value);
+          }
+        }
+        this.$emit('change', parameter);
+      }
+    },
+    attrs() {
+      return {
+        ...this.$attrs,
+        value: this.value
+      }
+    },
+    listeners() {
+      return {
+        ...this.$listeners,
+        change: this.changeHandler
+      }
+    }
+  },
 };
 </script>
 
