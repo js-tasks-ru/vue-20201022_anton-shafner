@@ -2,9 +2,10 @@
   <label class="checkbox">
     <input
       type="checkbox"
-      :checked="customChecked"
+      v-model="nativeChecked"
+      :value="value"
       v-on="listeners"
-      v-bind="attrs"
+      v-bind="$attrs"
     />
     <slot />
     <span></span>
@@ -23,45 +24,18 @@ export default {
     prop: 'checked',
     event: 'change'
   },
-  methods: {
-    changeHandler(event) {
-      this.customChecked = event.target.checked;
-    }
-  },
   computed: {
-    customChecked: {
-      get: function() {
-        if (this.value && Array.isArray(this.checked)) {
-          return this.checked.includes(this.value);
-        }
+    nativeChecked: {
+      get() {
         return this.checked;
       },
       set(val) {
-        const isChecked = val;
-        let parameter = isChecked;
-        if (this.value && Array.isArray(this.checked)) {
-          const valuesArray = this.checked.slice();
-          if (isChecked) {
-            valuesArray.push(this.value);
-            parameter = valuesArray;
-          } else {
-            parameter = valuesArray.filter(value => value !== this.value);
-          }
-        }
-        this.$emit('change', parameter);
-      }
-    },
-    attrs() {
-      return {
-        ...this.$attrs,
-        value: this.value
+        this.$emit('change', val);
       }
     },
     listeners() {
-      return {
-        ...this.$listeners,
-        change: this.changeHandler
-      }
+      const { change, ...listeners } = this.$listeners;
+      return listeners;
     }
   },
 };
