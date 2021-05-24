@@ -3,31 +3,145 @@
     <div class="rangepicker__calendar">
       <div class="rangepicker__month-indicator">
         <div class="rangepicker__selector-controls">
-          <button class="rangepicker__selector-control-left"></button>
-          <div>Январь 2021</div>
-          <button class="rangepicker__selector-control-right"></button>
+          <button class="rangepicker__selector-control-left" @click="prevMonthButtonHandler"></button>
+          <div>{{currentDate}}</div>
+          <button class="rangepicker__selector-control-right" @click="nextMonthButtonHandler"></button>
         </div>
       </div>
       <div class="rangepicker__date-grid">
-        <div class="rangepicker__cell rangepicker__cell_inactive">28</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">29</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">30</div>
-        <div class="rangepicker__cell rangepicker__cell_inactive">31</div>
-        <div class="rangepicker__cell">
-          1
-          <a class="rangepicker__event">Митап</a>
-          <a class="rangepicker__event">Митап</a>
+        <div
+          v-for="day in shownDays"
+          :key="day.id"
+          class="rangepicker__cell"
+          :class="{'rangepicker__cell_inactive': day.inactive}"
+        >
+          {{day.number}}
+          <slot v-for="event in day.listEvents" :event="event"></slot>
         </div>
-        <div class="rangepicker__cell">2</div>
-        <div class="rangepicker__cell">3</div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
+const millisecondsInDay = 1000 * 60 * 60 * 24 - 1;
+
+function addEventToShownMonth(monthInfo, eventDay, event) {
+  if(event.date > monthInfo.startMonth && event.date < monthInfo.endMonth) {
+    const index = monthInfo.days.findIndex(day => day.number === eventDay);
+    monthInfo.days[index].listEvents.push(event);
+  }
+};
+
 export default {
   name: 'CalendarView',
+  props: {
+    events: {
+      type: Array,
+    }
+  },
+  data() {
+    return {
+      date: new Date(),
+    }
+  },
+  computed: {
+    currentDate() {
+      const month = this.date.toLocaleString(navigator.language, {month: 'long'});
+      return `${month} ${this.currentYear}`;
+    },
+    currentYear() {
+      return this.date.getFullYear();
+    },
+    currentMonth() {
+      return this.date.getMonth();
+    },
+    prevMonth() {
+      return this.currentMonth - 1;
+    },
+    nextMonth() {
+      return this.currentMonth + 1;
+    },
+    shownCountDayPrevMonth() {
+      const weekday = new Date(this.currentYear, this.currentMonth, 1).getDay();
+      return weekday ? weekday - 1 : 6;
+    },
+    shownCountDayNextMonth() {
+      const weekday = new Date(this.currentYear, this.nextMonth, 0).getDay();
+      return weekday ? 7 - weekday : 0;
+    },
+    countDayPrevMonth() {
+      return new Date(this.currentYear, this.currentMonth, 0).getDate();
+    },
+    countDayCurrentMonth() {
+      return new Date(this.currentYear, this.nextMonth, 0).getDate();
+    },
+    shownDays() {
+      const allDays = [];    
+      let currentMonthInfo = null;
+      let prevMonthInfo = null;
+      let nextMonthInfo = null;
+
+      if (this.shownCountDayPrevMonth) {  
+        let numberFirstDay = this.countDayPrevMonth - this.shownCountDayPrevMonth + 1;
+        let numberLastDay = this.countDayPrevMonth;
+        prevMonthInfo = this.getMonthInfo(numberFirstDay, numberLastDay, this.prevMonth);
+        allDays.push(...prevMonthInfo.days);
+      }
+
+      let numberFirstDay = 1;
+      let numberLastDay = this.countDayCurrentMonth;
+      currentMonthInfo = this.getMonthInfo(numberFirstDay, numberLastDay, this.currentMonth);
+      allDays.push(...currentMonthInfo.days);
+
+      if (this.shownCountDayNextMonth) { 
+        let numberFirstDay = 1;
+        let numberLastDay = this.shownCountDayNextMonth;
+        nextMonthInfo = this.getMonthInfo(numberFirstDay, numberLastDay, this.nextMonth);
+        allDays.push(...nextMonthInfo.days);
+      }
+      if (Array.isArray(this.events) && this.events.length) {
+        for (let event of this.events) {
+          const eventDay = new Date(event.date).getDate();
+
+          prevMonthInfo && addEventToShownMonth(prevMonthInfo, eventDay, event);
+          addEventToShownMonth(currentMonthInfo, eventDay, event);
+          nextMonthInfo && addEventToShownMonth(nextMonthInfo, eventDay, event);
+        }
+      }
+
+      return allDays;
+    }
+  },
+
+  methods: {
+    nextMonthButtonHandler() {
+      this.date = new Date(this.currentYear, this.nextMonth);
+    },
+    prevMonthButtonHandler() {
+      this.date = new Date(this.currentYear, this.prevMonth);
+    },
+    getMonthInfo(numberFirstDay, numberLastDay, month) {
+      let monthInfo = {
+        days: [],
+        startMonth: 0,
+        endMonth: 0,
+      };
+      for(let i = numberFirstDay; i <= numberLastDay; i++ ) {
+        monthInfo.days.push({
+          id: new Date(this.currentYear, month, i).getTime(),
+          number: i,
+          inactive: month !== this.currentMonth,
+          listEvents: [],
+        });
+      }
+    
+      monthInfo.startMonth = Date.parse(new Date(this.currentYear, month, numberFirstDay));
+      monthInfo.endMonth = Date.parse(new Date(this.currentYear, month, numberLastDay)) + millisecondsInDay;
+
+      return monthInfo;
+    },
+  },
 };
 </script>
 
