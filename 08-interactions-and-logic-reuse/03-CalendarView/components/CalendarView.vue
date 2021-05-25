@@ -11,12 +11,12 @@
       <div class="rangepicker__date-grid">
         <div
           v-for="day in shownDays"
-          :key="day.id"
+          :key="day.edgesDay.startDay"
           class="rangepicker__cell"
           :class="{'rangepicker__cell_inactive': day.inactive}"
         >
           {{day.number}}
-          <slot v-for="event in day.listEvents" :event="event"></slot>
+          <slot :edgesDay="day.edgesDay"></slot>
         </div>
       </div>
     </div>
@@ -26,20 +26,8 @@
 <script>
 const millisecondsInDay = 1000 * 60 * 60 * 24 - 1;
 
-function addEventToShownMonth(monthInfo, eventDay, event) {
-  if(event.date > monthInfo.startMonth && event.date < monthInfo.endMonth) {
-    const index = monthInfo.days.findIndex(day => day.number === eventDay);
-    monthInfo.days[index].listEvents.push(event);
-  }
-};
-
 export default {
   name: 'CalendarView',
-  props: {
-    events: {
-      type: Array,
-    }
-  },
   data() {
     return {
       date: new Date(),
@@ -100,15 +88,6 @@ export default {
         nextMonthInfo = this.getMonthInfo(numberFirstDay, numberLastDay, this.nextMonth);
         allDays.push(...nextMonthInfo.days);
       }
-      if (Array.isArray(this.events) && this.events.length) {
-        for (let event of this.events) {
-          const eventDay = new Date(event.date).getDate();
-
-          prevMonthInfo && addEventToShownMonth(prevMonthInfo, eventDay, event);
-          addEventToShownMonth(currentMonthInfo, eventDay, event);
-          nextMonthInfo && addEventToShownMonth(nextMonthInfo, eventDay, event);
-        }
-      }
 
       return allDays;
     }
@@ -128,11 +107,15 @@ export default {
         endMonth: 0,
       };
       for(let i = numberFirstDay; i <= numberLastDay; i++ ) {
+        const startDay = new Date(this.currentYear, month, i).getTime();
+        const endDay = startDay + millisecondsInDay;
         monthInfo.days.push({
-          id: new Date(this.currentYear, month, i).getTime(),
           number: i,
           inactive: month !== this.currentMonth,
-          listEvents: [],
+          edgesDay: {
+            startDay,
+            endDay,
+          },
         });
       }
     

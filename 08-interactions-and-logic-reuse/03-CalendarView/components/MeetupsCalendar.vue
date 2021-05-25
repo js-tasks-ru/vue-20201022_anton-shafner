@@ -1,11 +1,13 @@
 <template>
-  <calendar-view :events="meetups">
-    <template #default="{ event }">
+  <calendar-view>
+    <template #default="{ edgesDay }">
       <router-link
-        :to="{ name: 'meetup', params: { meetupId: event.id } }"
+        v-for="meetup in getDisplayedMeetups(edgesDay)"
+        :key="meetup.id"
+        :to="{ name: 'meetup', params: { meetupId: meetup.id } }"
         class="rangepicker__event"
-        >{{ event.title }}</router-link
-      >
+      >{{ meetup.title }}</router-link
+    >
     </template>
   </calendar-view>
 </template>
@@ -26,6 +28,11 @@ export default {
   components: {
     CalendarView,
   },
+  methods: {
+    getDisplayedMeetups(edges) {
+      return this.meetups.filter(meetup => meetup.date > edges.startDay && meetup.date < edges.endDay);
+    }
+  }
 };
 </script>
 
