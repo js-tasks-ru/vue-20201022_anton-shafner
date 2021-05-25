@@ -11,12 +11,12 @@
       <div class="rangepicker__date-grid">
         <div
           v-for="day in shownDays"
-          :key="day.edgesDay.startDay"
+          :key="day.milliseconds"
           class="rangepicker__cell"
           :class="{'rangepicker__cell_inactive': day.inactive}"
         >
           {{day.number}}
-          <slot :edgesDay="day.edgesDay"></slot>
+          <slot :day="day.milliseconds"></slot>
         </div>
       </div>
     </div>
@@ -107,15 +107,10 @@ export default {
         endMonth: 0,
       };
       for(let i = numberFirstDay; i <= numberLastDay; i++ ) {
-        const startDay = new Date(this.currentYear, month, i).getTime();
-        const endDay = startDay + millisecondsInDay;
         monthInfo.days.push({
           number: i,
           inactive: month !== this.currentMonth,
-          edgesDay: {
-            startDay,
-            endDay,
-          },
+          milliseconds: Date.UTC(this.currentYear, month, i),
         });
       }
     

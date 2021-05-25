@@ -1,15 +1,18 @@
 <template>
-  <calendar-view>
-    <template #default="{ edgesDay }">
-      <router-link
-        v-for="meetup in getDisplayedMeetups(edgesDay)"
-        :key="meetup.id"
-        :to="{ name: 'meetup', params: { meetupId: meetup.id } }"
-        class="rangepicker__event"
-      >{{ meetup.title }}</router-link
-    >
-    </template>
-  </calendar-view>
+  <div>
+    <calendar-view>
+      <template #default="{ day }">
+        <router-link
+          v-for="meetup in getDisplayedMeetups(day)"
+          :key="meetup.id"
+          :to="{ name: 'meetup', params: { meetupId: meetup.id } }"
+          class="rangepicker__event"
+        >
+          {{ meetup.title }}
+        </router-link>
+      </template>
+    </calendar-view>
+  </div>
 </template>
 
 <script>
@@ -29,8 +32,23 @@ export default {
     CalendarView,
   },
   methods: {
-    getDisplayedMeetups(edges) {
-      return this.meetups.filter(meetup => meetup.date > edges.startDay && meetup.date < edges.endDay);
+    getDisplayedMeetups(day) {
+      const stringDate = new Date(day).toISOString().split('T')[0];
+      return this.groupedMeetupsByDate[stringDate];
+    }
+  },
+  computed: {
+    groupedMeetupsByDate() {
+      const groupedMeetups = {};
+      this.meetups.forEach(meetup => {
+        const stringDate = new Date(meetup.date).toISOString().split('T')[0];
+        if (!groupedMeetups[stringDate]) {
+          groupedMeetups[stringDate] = [];
+        }
+        groupedMeetups[stringDate].push(meetup)
+      });
+
+      return groupedMeetups;
     }
   }
 };
