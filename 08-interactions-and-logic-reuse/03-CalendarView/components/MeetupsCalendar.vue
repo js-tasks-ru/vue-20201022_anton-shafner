@@ -1,15 +1,18 @@
 <template>
-  <calendar-view>
-    <!-- Каждый митап - ссылка на страницу митапа -->
-    <!-- Используя слот требуется вывести список митапов дня в каждой ячейке -->
-    <!--
-    <router-link
-      :to="{ name: 'meetup', params: { meetupId: meetup.id } }"
-      class="rangepicker__event"
-      >{{ meetup.title }}</router-link
-    >
-    -->
-  </calendar-view>
+  <div>
+    <calendar-view>
+      <template #default="{ day }">
+        <router-link
+          v-for="meetup in getDisplayedMeetups(day)"
+          :key="meetup.id"
+          :to="{ name: 'meetup', params: { meetupId: meetup.id } }"
+          class="rangepicker__event"
+        >
+          {{ meetup.title }}
+        </router-link>
+      </template>
+    </calendar-view>
+  </div>
 </template>
 
 <script>
@@ -28,6 +31,26 @@ export default {
   components: {
     CalendarView,
   },
+  methods: {
+    getDisplayedMeetups(day) {
+      const stringDate = new Date(day).toISOString().split('T')[0];
+      return this.groupedMeetupsByDate[stringDate];
+    }
+  },
+  computed: {
+    groupedMeetupsByDate() {
+      const groupedMeetups = {};
+      this.meetups.forEach(meetup => {
+        const stringDate = new Date(meetup.date).toISOString().split('T')[0];
+        if (!groupedMeetups[stringDate]) {
+          groupedMeetups[stringDate] = [];
+        }
+        groupedMeetups[stringDate].push(meetup)
+      });
+
+      return groupedMeetups;
+    }
+  }
 };
 </script>
 
